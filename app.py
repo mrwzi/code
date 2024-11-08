@@ -80,8 +80,15 @@ game = TicTacToe()
 
 @app.route('/move', methods=['POST'])
 def move():
-    data = request.json
-    row, col = data['row'], data['col']
+    if not request.is_json:
+        return jsonify({"error": "Invalid content type. Please send JSON."}), 400
+    
+    data = request.get_json()  # Safely retrieve JSON data
+    row, col = data.get('row'), data.get('col')
+
+    if row is None or col is None:
+        return jsonify({"error": "Both 'row' and 'col' must be provided."}), 400
+
     if game.make_move(row, col, game.player):
         if game.check_win(game.player):
             return jsonify({"status": "win", "winner": game.player})
